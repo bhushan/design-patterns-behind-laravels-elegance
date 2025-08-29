@@ -1,89 +1,68 @@
 <?php
 
-abstract class Vehicle
+abstract class Handler
 {
-    public function __construct(protected string $brand) {}
+    private ?Handler $next = null;
 
-    abstract public function start(): string;
-
-    public function getBrand(): string
+    public function setNext(Handler $handler): Handler
     {
-        return $this->brand;
+        $this->next = $handler;
+
+        return $handler;
+    }
+
+    public function handle(string $request): ?string
+    {
+        if ($this->next) {
+            return $this->next->handle($request);
+        }
+
+        return null;
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-class Car extends Vehicle
+class AuthHandler extends Handler
 {
-    public function start(): string
+    public function handle(string $request): ?string
     {
-        return $this->getBrand().' car engine started 🚗';
+        if ($request === 'unauthorized') {
+            return 'AuthHandler: Access Denied!';
+        }
+
+        return parent::handle($request);
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-class Bike extends Vehicle
+class LoggerHandler extends Handler
 {
-    public function start(): string
+    public function handle(string $request): ?string
     {
-        return $this->getBrand().' bike engine started 🏍️';
+        dump("LoggerHandler: Logging request -> $request");
+
+        return parent::handle($request);
     }
 }
 
-$car = new Car('Toyota');
-dump($car->start());
+class DataHandler extends Handler
+{
+    public function handle(string $request): ?string
+    {
+        if ($request === 'data') {
+            return 'DataHandler: Processing data...';
+        }
 
-$bike = new Bike('Yamaha');
-dd($bike->start());
+        return parent::handle($request);
+    }
+}
+
+$auth = new AuthHandler;
+$logger = new LoggerHandler;
+$data = new DataHandler;
+
+$auth->setNext($logger)->setNext($data);
+
+dd(
+    $auth->handle('unauthorized'),
+    $auth->handle('data'),
+    $auth->handle('other')
+);
