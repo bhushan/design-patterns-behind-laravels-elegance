@@ -1,28 +1,35 @@
 <?php
 
-interface Logger
+abstract class Vehicle
 {
-    public function log(string $message): string;
-}
+    public function __construct(protected string $brand) {}
 
-class FileLogger implements Logger
-{
-    public function log(string $message): string
+    abstract public function start(): string;
+
+    public function getBrand(): string
     {
-        return 'Logging to a file: '.$message.PHP_EOL;
+        return $this->brand;
     }
 }
 
-class DatabaseLogger implements Logger
+class Car extends Vehicle
 {
-    public function log(string $message): string
+    public function start(): string
     {
-        return 'Logging to a database: '.$message.PHP_EOL;
+        return $this->getBrand().' car engine started 🚗';
     }
 }
 
-$obj = new DatabaseLogger;
+class Bike extends Vehicle
+{
+    public function start(): string
+    {
+        return $this->getBrand().' bike engine started 🏍️';
+    }
+}
 
-dd(
-    $obj->log('Hello Ahmedabad')
-);
+$car = new Car('Toyota');
+dump($car->start());
+
+$bike = new Bike('Yamaha');
+dd($bike->start());
