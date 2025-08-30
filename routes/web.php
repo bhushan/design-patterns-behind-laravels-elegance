@@ -1,17 +1,27 @@
 <?php
 
-abstract class Vehicle
+class Hello
 {
-    public function __construct(protected string $brand) {}
-
-    abstract public function start(): string;
-
-    public function getBrand(): string
+    public function world(): string
     {
-        return $this->brand;
+        return 'Hello World';
     }
 }
 
+app()->bind('hello', function () {
+    return new Hello;
+});
+
+// app()->bind(Hello::class, function () {
+//    return new Hello;
+// });
+
+$obj = app()->make('hello');
+dd($obj->world());
+
+// app()->singleton('hello', function () {
+//    return new Hello;
+// });
 
 
 
@@ -36,13 +46,6 @@ abstract class Vehicle
 
 
 
-class Car extends Vehicle
-{
-    public function start(): string
-    {
-        return $this->getBrand().' car engine started 🚗';
-    }
-}
 
 
 
@@ -69,21 +72,43 @@ class Car extends Vehicle
 
 
 
-
-
-
-
-
-class Bike extends Vehicle
-{
-    public function start(): string
-    {
-        return $this->getBrand().' bike engine started 🏍️';
-    }
-}
-
-$car = new Car('Toyota');
-dump($car->start());
-
-$bike = new Bike('Yamaha');
-dd($bike->start());
+// class Hello
+// {
+//    public int $counter = 0;
+//
+//    public function world(): string
+//    {
+//        return 'Hello World';
+//    }
+//
+//    public function increment(): int
+//    {
+//        $this->counter++;
+//
+//        return $this->counter;
+//    }
+// }
+//
+// // app()->bind('hello', function () {
+// //    return new Hello;
+// // });
+//
+// // app()->bind(Hello::class, function () {
+// //    return new Hello;
+// // });
+//
+// app()->singleton('hello', function () {
+//    return new Hello;
+// });
+//
+// $obj = app()->make('hello');
+// $obj->increment();
+//
+// $obj = app()->make('hello');
+// $obj->increment();
+// $obj = app()->make('hello');
+// $obj->increment();
+//
+// $obj = app()->make('hello');
+// $obj->increment();
+// dd($obj->increment());
