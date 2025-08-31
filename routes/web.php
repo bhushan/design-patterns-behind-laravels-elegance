@@ -1,7 +1,27 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+class Human
+{
+    public function walk()
+    {
+        dump('walk');
 
-Route::get('/', function () {
-    return view('welcome');
-});
+        return $this;
+    }
+
+    public function eat()
+    {
+        dump('eat');
+
+        return $this;
+    }
+
+    public function sleep()
+    {
+        dump('sleep');
+
+        return $this;
+    }
+}
+
+(new Human)->eat()->walk()->sleep();
