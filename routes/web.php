@@ -1,43 +1,74 @@
 <?php
 
-interface Shape
+interface Observer
 {
-    public function draw(): string;
+    public function update(string $message): void;
 }
 
-class Circle implements Shape
+interface Subject
 {
-    public function draw(): string
+    public function attach(Observer $observer): void;
+
+    public function detach(Observer $observer): void;
+
+    public function notify(): void;
+}
+
+class NewsPublisher implements Subject
+{
+    private array $observers = [];
+
+    private string $latestNews = '';
+
+    public function attach(Observer $observer): void
     {
-        return 'Drawing Circle';
+        $this->observers[] = $observer;
+    }
+
+    public function detach(Observer $observer): void
+    {
+        $this->observers = array_filter(
+            $this->observers,
+            fn ($o) => $o !== $observer
+        );
+    }
+
+    public function notify(): void
+    {
+        foreach ($this->observers as $observer) {
+            $observer->update($this->latestNews);
+        }
+    }
+
+    public function addNews(string $news): void
+    {
+        $this->latestNews = $news;
+        $this->notify();
     }
 }
 
-class Square implements Shape
+class EmailSubscriber implements Observer
 {
-    public function draw(): string
+    private string $name;
+
+    public function __construct(string $name)
     {
-        return 'Drawing Square';
+        $this->name = $name;
+    }
+
+    public function update(string $message): void
+    {
+        echo "{$this->name} received news: {$message}";
     }
 }
 
-class ShapeFactory
-{
-    public static function create($type): Shape
-    {
-        return match (strtolower($type)) {
-            'circle' => new Circle,
-            'square' => new Square,
-            default => throw new Exception('Invalid shape type')
-        };
-    }
-}
+$newsPublisher = new NewsPublisher;
 
-// Client
-try {
-    $shape = ShapeFactory::create('circle');
-} catch (Exception $e) {
-    dd($e->getMessage());
-}
+$subscriber1 = new EmailSubscriber('Punyapal');
+$subscriber2 = new EmailSubscriber('Bhushan');
 
-dd($shape->draw());
+$newsPublisher->attach($subscriber1);
+$newsPublisher->attach($subscriber2);
+
+$newsPublisher->addNews('New PHP version released!');
+exit();
