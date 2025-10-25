@@ -1,70 +1,43 @@
 <?php
 
-interface PizzaBuilderInterface
+interface Shape
 {
-    public function setDough(string $dough): self;
-
-    public function setSauce(string $sauce): self;
-
-    public function setTopping(string $topping): self;
-
-    public function build(): Pizza;
+    public function draw(): string;
 }
 
-class Pizza
+class Circle implements Shape
 {
-    public string $dough;
-
-    public string $sauce;
-
-    public string $topping;
-
-    public function __toString(): string
+    public function draw(): string
     {
-        return "Pizza with {$this->dough} dough, {$this->sauce} sauce, and {$this->topping} topping.";
+        return 'Drawing Circle';
     }
 }
 
-class PizzaBuilder implements PizzaBuilderInterface
+class Square implements Shape
 {
-    private Pizza $pizza;
-
-    public function __construct()
+    public function draw(): string
     {
-        $this->pizza = new Pizza;
-    }
-
-    public function setDough(string $dough): self
-    {
-        $this->pizza->dough = $dough;
-
-        return $this;
-    }
-
-    public function setSauce(string $sauce): self
-    {
-        $this->pizza->sauce = $sauce;
-
-        return $this;
-    }
-
-    public function setTopping(string $topping): self
-    {
-        $this->pizza->topping = $topping;
-
-        return $this;
-    }
-
-    public function build(): Pizza
-    {
-        return $this->pizza;
+        return 'Drawing Square';
     }
 }
 
-$builder = new PizzaBuilder;
-$pizza = $builder->setDough('thin')
-    ->setSauce('tomato')
-    ->setTopping('cheese')
-    ->build();
+class ShapeFactory
+{
+    public static function create($type): Shape
+    {
+        return match (strtolower($type)) {
+            'circle' => new Circle,
+            'square' => new Square,
+            default => throw new Exception('Invalid shape type')
+        };
+    }
+}
 
-dd((string) $pizza);
+// Client
+try {
+    $shape = ShapeFactory::create('circle');
+} catch (Exception $e) {
+    dd($e->getMessage());
+}
+
+dd($shape->draw());
