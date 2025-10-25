@@ -1,74 +1,43 @@
 <?php
 
-interface Observer
+class UserRegistered
 {
-    public function update(string $message): void;
+    public function __construct(public string $username) {}
 }
 
-interface Subject
+class SendWelcomeEmail
 {
-    public function attach(Observer $observer): void;
-
-    public function detach(Observer $observer): void;
-
-    public function notify(): void;
+    public function handle(UserRegistered $event): void
+    {
+        echo "Sending welcome email to {$event->username}\n";
+    }
 }
 
-class NewsPublisher implements Subject
+class EventDispatcher
 {
-    private array $observers = [];
+    private array $listeners = [];
 
-    private string $latestNews = '';
-
-    public function attach(Observer $observer): void
+    public function listen(string $eventName, callable $listener): void
     {
-        $this->observers[] = $observer;
+        $this->listeners[$eventName][] = $listener;
     }
 
-    public function detach(Observer $observer): void
+    public function dispatch(object $event): void
     {
-        $this->observers = array_filter(
-            $this->observers,
-            fn ($o) => $o !== $observer
-        );
-    }
+        $eventName = get_class($event);
 
-    public function notify(): void
-    {
-        foreach ($this->observers as $observer) {
-            $observer->update($this->latestNews);
+        if (! isset($this->listeners[$eventName]) || empty($this->listeners[$eventName])) {
+            return;
+        }
+
+        foreach ($this->listeners[$eventName] as $listener) {
+            $listener($event);
         }
     }
-
-    public function addNews(string $news): void
-    {
-        $this->latestNews = $news;
-        $this->notify();
-    }
 }
 
-class EmailSubscriber implements Observer
-{
-    private string $name;
+$dispatcher = new EventDispatcher;
+$dispatcher->listen(UserRegistered::class, [new SendWelcomeEmail, 'handle']);
 
-    public function __construct(string $name)
-    {
-        $this->name = $name;
-    }
-
-    public function update(string $message): void
-    {
-        echo "{$this->name} received news: {$message}";
-    }
-}
-
-$newsPublisher = new NewsPublisher;
-
-$subscriber1 = new EmailSubscriber('Punyapal');
-$subscriber2 = new EmailSubscriber('Bhushan');
-
-$newsPublisher->attach($subscriber1);
-$newsPublisher->attach($subscriber2);
-
-$newsPublisher->addNews('New PHP version released!');
+$dispatcher->dispatch(new UserRegistered('Bhushan'));
 exit();
